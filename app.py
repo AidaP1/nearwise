@@ -5,9 +5,11 @@ from dotenv import load_dotenv
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager
+import requests
 
 
 app = Flask(__name__)  # <-- This exact line must exist
+app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this to a secure secret key
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # endpoint name for login page
@@ -21,10 +23,22 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'my
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
 
+# DBs
+
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+
+    # One-to-many relationship
+    locations = db.relationship('Location', backref='user', lazy=True)
+
+class Location(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))  # e.g. "Work", "Home", "Client HQ"
+    address = db.Column(db.String(255), nullable=False)  # or lat/lng if you prefer
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -75,10 +89,81 @@ def login():
 def logout():
     logout_user()
     flash("You have logged out.")
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
+
+@app.route('/api/travel_times')
+def travel_times():
+    origin = request.args.get('origin')  # e.g., "New York, NY"
+    destination = request.args.get('destination')  # e.g., "Boston, MA"
+
+    if not origin or not destination:
+        return {"error": "Please provide both origin and destination."}, 400
+
+    api_key = os.environ.get('GOOGLE_API_KEY')
+    modes = ['driving', 'walking', 'bicycling', 'transit']
+    results = {}
+
+    for mode in modes:
+        url = (
+            f"https://maps.googleapis.com/maps/api/distancematrix/json"
+            f"?origins={origin}&destinations={destination}"
+            f"&mode={mode}&key={api_key}"
+        )
+        response = requests.get(url)
+        data = response.json()
+
+        if data['status'] == 'OK':
+            try:
+                duration = data['rows'][0]['elements'][0]['duration']['text']
+                results[mode] = duration
+            except (KeyError, IndexError):
+                results[mode] = "Not available"
+        else:
+            results[mode] = "Error contacting API"
+
+    return results
+
+@app.route('/add_location', methods=['GET', 'POST'])
+@login_required
+def add_location():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        address = request.form.get('address')
+
+        if not name or not address:
+            flash('Both name and address are required.')
+            return redirect(url_for('add_location'))
+
+        # Create and save new location
+        new_loc = Location(name=name, address=address, user_id=current_user.id)
+        db.session.add(new_loc)
+        db.session.commit()
+        flash('Location saved successfully!')
+        return redirect(url_for('add_location'))
+
+    return render_template('add_location.html')
+
+@app.route('/my_locations')
+@login_required
+def my_locations():
+    locations = Location.query.filter_by(user_id=current_user.id).all()
+    return render_template('my_locations.html', locations=locations)
+
 
 @app.route("/")
 def home():
+    if current_user.is_authenticated:
+        return render_template('home.html', user=current_user)
     return render_template('home.html')
+
+@app.route("/index")
+def index():
+    return redirect(url_for('home'))
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)
+
 
 

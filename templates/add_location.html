@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Add a Location</h2>
+
+  <form method="POST" action="{{ url_for('add_location') }}">
+    <label>Name (e.g. Home, Work):</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Address:</label><br>
+    <input type="text" name="address" required><br><br>
+
+    <button type="submit">Save Location</button>
+  </form>
+{% endblock %}

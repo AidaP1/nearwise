@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>My Saved Locations</h2>
+
+  {% if locations %}
+    <ul>
+      {% for loc in locations %}
+        <li><strong>{{ loc.name }}</strong>: {{ loc.address }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You have no saved locations yet.</p>
+  {% endif %}
+
+  <a href="{{ url_for('add_location') }}">Add a New Location</a>
+{% endblock %}
