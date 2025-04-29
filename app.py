@@ -149,6 +149,54 @@ def my_locations():
     locations = Location.query.filter_by(user_id=current_user.id).all()
     return render_template('my_locations.html', locations=locations)
 
+@app.route('/compare_travel', methods=['GET', 'POST'])
+@login_required
+def compare_travel():
+    if request.method == 'POST':
+        new_location = request.form.get('new_location')
+        saved_location_id = request.form.get('saved_location_id')
+
+        saved_location = Location.query.filter_by(id=saved_location_id, user_id=current_user.id).first()
+
+        if not new_location or not saved_location:
+            flash("Missing information or invalid saved location.")
+            return redirect(url_for('compare_travel'))
+
+        # Call Google API
+        api_key = os.environ.get('GOOGLE_API_KEY')
+        modes = ['driving', 'walking', 'bicycling', 'transit']
+        results = {}
+
+        for mode in modes:
+            url = (
+                f"https://maps.googleapis.com/maps/api/distancematrix/json"
+                f"?origins={new_location}&destinations={saved_location.address}"
+                f"&mode={mode}&key={api_key}"
+            )
+            response = requests.get(url)
+            data = response.json()
+
+            if data['status'] == 'OK':
+                try:
+                    duration = data['rows'][0]['elements'][0]['duration']['text']
+                    results[mode] = duration
+                except (KeyError, IndexError):
+                    results[mode] = "Unavailable"
+            else:
+                results[mode] = "API error"
+
+        return render_template(
+            'travel_results.html',
+            new_location=new_location,
+            saved_location=saved_location,
+            results=results
+        )
+
+    # GET: show form
+    saved_locations = Location.query.filter_by(user_id=current_user.id).all()
+    return render_template('compare_travel.html', saved_locations=saved_locations)
+
+
 
 @app.route("/")
 def home():

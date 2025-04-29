@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Travel Time Results</h2>
+
+  <p><strong>From:</strong> {{ new_location }}</p>
+  <p><strong>To:</strong> {{ saved_location.name }} — {{ saved_location.address }}</p>
+
+  <ul>
+    {% for mode, duration in results.items() %}
+      <li><strong>{{ mode.capitalize() }}:</strong> {{ duration }}</li>
+    {% endfor %}
+  </ul>
+
+  <a href="{{ url_for('compare_travel') }}">Compare another location</a>
+{% endblock %}

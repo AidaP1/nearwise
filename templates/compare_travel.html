@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Compare Travel Time</h2>
+  <form method="POST" action="{{ url_for('compare_travel') }}">
+    <label>Enter a new location (e.g. address or postcode):</label><br>
+    <input type="text" name="new_location" required><br><br>
+
+    <label>Select one of your saved locations:</label><br>
+    <select name="saved_location_id" required>
+      {% for loc in saved_locations %}
+        <option value="{{ loc.id }}">{{ loc.name }} — {{ loc.address }}</option>
+      {% endfor %}
+    </select><br><br>
+
+    <button type="submit">Compare Travel Times</button>
+  </form>
+{% endblock %}
