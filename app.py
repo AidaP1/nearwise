@@ -28,16 +28,24 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWa
 db = SQLAlchemy(app)
 
 def init_database():
-    with app.app_context():
-        # Check if tables exist and create them if they don't
-        inspector = inspect(db.engine)
-        existing_tables = inspector.get_table_names()
-        if not existing_tables:
-            print("No existing tables found. Creating database tables...")
-            db.create_all()
-            print("Database tables created successfully!")
-        else:
-            print("Tables already exist in the database.")
+    try:
+        with app.app_context():
+            print("Attempting to initialize database...")
+            print(f"Database URI: {app.config['SQLALCHEMY_DATABASE_URI']}")
+            # Check if tables exist and create them if they don't
+            inspector = inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            print(f"Existing tables: {existing_tables}")
+            
+            if not existing_tables:
+                print("No existing tables found. Creating database tables...")
+                db.create_all()
+                print("Database tables created successfully!")
+            else:
+                print("Tables already exist in the database.")
+    except Exception as e:
+        print(f"Error during database initialization: {str(e)}")
+        raise
 
 # Initialize database
 init_database()
