@@ -9,7 +9,7 @@ import requests
 
 
 app = Flask(__name__)  # <-- This exact line must exist
-app.config['SECRET_KEY'] = 'your-secret-key-here'  # Change this to a secure secret key
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key')  # fallback for local
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # endpoint name for login page
@@ -26,15 +26,6 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
 
-# Initialize database
-def init_db():
-    with app.app_context():
-        db.create_all()
-
-# Call init_db to create tables
-init_db()
-
-# DBs
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'  # Explicitly set table name
