@@ -53,7 +53,7 @@ print(f"📦 Using DB: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
 
 class User(db.Model, UserMixin):
-    __tablename__ = 'user'  # Explicitly set table name
+    __tablename__ = 'users'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
@@ -65,7 +65,7 @@ class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))  # e.g. "Work", "Home", "Client HQ"
     address = db.Column(db.String(255), nullable=False)  # or lat/lng if you prefer
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 
 @login_manager.user_loader
