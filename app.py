@@ -19,9 +19,13 @@ load_dotenv()
 
 # Configure database URL
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'myapp.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'myapp.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
+
+# Initialize database
+with app.app_context():
+    db.create_all()
 
 # DBs
 
@@ -50,38 +54,45 @@ from flask_login import login_user, logout_user, login_required, current_user
 @app.route('/register', methods=['GET','POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))  # if logged in, skip register
+        return redirect(url_for('home'))  # if logged in, skip register
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        # Simple validation:
-        if not email or not password:
-            flash("Please fill all fields.")
-        elif User.query.filter_by(email=email).first():
-            flash("That email address is already in use.")
-        else:
-            # create new user
-            hashed_pw = generate_password_hash(password)
-            new_user = User(email=email, password_hash=hashed_pw)
-            db.session.add(new_user)
-            db.session.commit()
-            flash("Registration successful! Please log in.")
-            return redirect(url_for('login'))
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            # Simple validation:
+            if not email or not password:
+                flash("Please fill all fields.")
+            elif User.query.filter_by(email=email).first():
+                flash("That email address is already in use.")
+            else:
+                # create new user
+                hashed_pw = generate_password_hash(password)
+                new_user = User(email=email, password_hash=hashed_pw)
+                db.session.add(new_user)
+                db.session.commit()
+                flash("Registration successful! Please log in.")
+                return redirect(url_for('login'))
+        except Exception as e:
+            flash(f"An error occurred: {str(e)}")
+            db.session.rollback()
     return render_template('register.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)  # log the user in
-            return redirect(url_for('index'))
-        else:
-            flash("Invalid credentials.")
+        try:
+            email = request.form.get('email')
+            password = request.form.get('password')
+            user = User.query.filter_by(email=email).first()
+            if user and check_password_hash(user.password_hash, password):
+                login_user(user)  # log the user in
+                return redirect(url_for('home'))
+            else:
+                flash("Invalid credentials.")
+        except Exception as e:
+            flash(f"An error occurred: {str(e)}")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -207,6 +218,15 @@ def home():
 @app.route("/index")
 def index():
     return redirect(url_for('home'))
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('500.html'), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('404.html'), 404
 
 if __name__ == '__main__':
     with app.app_context():
