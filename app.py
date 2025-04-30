@@ -49,6 +49,8 @@ def init_database():
 
 # Initialize database
 init_database()
+print(f"📦 Using DB: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'  # Explicitly set table name
