@@ -19,7 +19,10 @@ load_dotenv()
 
 # Configure database URL
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'myapp.db'))
+if os.environ.get('RENDER') == 'true':
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'myapp.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
 
