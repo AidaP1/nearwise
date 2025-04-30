@@ -27,12 +27,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWa
 db = SQLAlchemy(app)
 
 # Initialize database
-with app.app_context():
-    db.create_all()
+def init_db():
+    with app.app_context():
+        db.create_all()
+
+# Call init_db to create tables
+init_db()
 
 # DBs
 
 class User(db.Model, UserMixin):
+    __tablename__ = 'user'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
