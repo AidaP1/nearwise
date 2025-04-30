@@ -6,6 +6,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager
 import requests
+from sqlalchemy import inspect
 
 
 app = Flask(__name__)  # <-- This exact line must exist
@@ -229,7 +230,15 @@ def not_found_error(error):
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        # Check if tables exist and create them if they don't
+        inspector = inspect(db.engine)
+        existing_tables = inspector.get_table_names()
+        if not existing_tables:
+            print("No existing tables found. Creating database tables...")
+            db.create_all()
+            print("Database tables created successfully!")
+        else:
+            print("Tables already exist in the database.")
     app.run(debug=True)
 
 
