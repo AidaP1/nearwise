@@ -27,6 +27,20 @@ else:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
 
+def init_database():
+    with app.app_context():
+        # Check if tables exist and create them if they don't
+        inspector = inspect(db.engine)
+        existing_tables = inspector.get_table_names()
+        if not existing_tables:
+            print("No existing tables found. Creating database tables...")
+            db.create_all()
+            print("Database tables created successfully!")
+        else:
+            print("Tables already exist in the database.")
+
+# Initialize database
+init_database()
 
 class User(db.Model, UserMixin):
     __tablename__ = 'user'  # Explicitly set table name
@@ -229,16 +243,6 @@ def not_found_error(error):
     return render_template('404.html'), 404
 
 if __name__ == '__main__':
-    with app.app_context():
-        # Check if tables exist and create them if they don't
-        inspector = inspect(db.engine)
-        existing_tables = inspector.get_table_names()
-        if not existing_tables:
-            print("No existing tables found. Creating database tables...")
-            db.create_all()
-            print("Database tables created successfully!")
-        else:
-            print("Tables already exist in the database.")
     app.run(debug=True)
 
 
