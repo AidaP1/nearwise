@@ -47,11 +47,10 @@ def init_database():
         print(f"Error during database initialization: {str(e)}")
         raise
 
-# Initialize database
+# Initialize database immediately
 init_database()
-print(f"📦 Using DB: {app.config['SQLALCHEMY_DATABASE_URI']}")
 
-
+# Define models after initialization
 class User(db.Model, UserMixin):
     __tablename__ = 'users'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
