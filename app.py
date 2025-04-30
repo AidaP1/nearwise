@@ -47,7 +47,7 @@ def init_database():
         print(f"Error during database initialization: {str(e)}")
         raise
 
-# Initialize database immediately
+# Initialize database
 init_database()
 
 # Define models after initialization
