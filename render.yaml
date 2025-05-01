@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: nearwise
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      flask db upgrade
+    startCommand: gunicorn --config gunicorn_config.py app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: RENDER
+        value: "true"
+      - key: FLASK_APP
+        value: app.py
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SQLALCHEMY_DATABASE_URI
+        sync: false 

@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
 from flask_login import UserMixin
@@ -7,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager
 import requests
 from sqlalchemy import inspect
+from datetime import datetime
 
 
 app = Flask(__name__)  # <-- This exact line must exist
@@ -26,6 +28,7 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'myapp.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # disable FSADeprecationWarning
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)  # Initialize Flask-Migrate
 
 def init_database():
     try:
@@ -56,6 +59,7 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    created_date = db.Column(db.DateTime, default=datetime.utcnow)
 
     # One-to-many relationship
     locations = db.relationship('Location', backref='user', lazy=True)
