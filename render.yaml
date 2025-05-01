@@ -5,8 +5,10 @@ services:
     buildCommand: |
       pip install -r requirements.txt
     startCommand: |
-      flask db upgrade 
+      echo "Running Flask DB upgrade..."
+      flask db upgrade
       gunicorn --config gunicorn_config.py app:app
+
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
