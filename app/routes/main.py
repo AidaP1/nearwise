@@ -1,25 +1,26 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
+from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import User, Location
 from .. import db
 from ..services.travel import get_travel_times, compare_locations
+import os
 
 
-main = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__)
 
-@main.route("/")
+@main_bp.route("/")
 def home():
     if current_user.is_authenticated:
         return render_template('home.html', user=current_user)
     return render_template('home.html')
 
-@main.route("/index")
+@main_bp.route("/index")
 def index():
     return redirect(url_for('main.home'))
 
-@main.route("/register", methods=["GET", "POST"])
-def register():
+@main_bp.route("/register", methods=["GET", "POST"])
+def register_user():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))  # if logged in, skip register
     if request.method == 'POST':
@@ -44,7 +45,7 @@ def register():
             db.session.rollback()
     return render_template('register.html')
 
-@main.route("/login", methods=["GET", "POST"])
+@main_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
@@ -62,20 +63,20 @@ def login():
             flash(f"An error occurred: {str(e)}")
     return render_template('login.html')
 
-@main.route("/logout")
+@main_bp.route("/logout")
 @login_required
 def logout():
     logout_user()
     flash("You have logged out.")
     return redirect(url_for("main.home"))
 
-@main.route("/my_locations")
+@main_bp.route("/my_locations")
 @login_required
 def my_locations():
     locations = Location.query.filter_by(user_id=current_user.id).all()
     return render_template('my_locations.html', locations=locations)
 
-@main.route("/add_location", methods=["GET", "POST"])
+@main_bp.route("/add_location", methods=["GET", "POST"])
 @login_required
 def add_location():
     if request.method == 'POST':
@@ -95,7 +96,7 @@ def add_location():
 
     return render_template('add_location.html')
 
-@main.route('/compare_travel', methods=['GET', 'POST'])
+@main_bp.route('/compare_travel', methods=['GET', 'POST'])
 @login_required
 def compare_travel():
     if request.method == 'POST':

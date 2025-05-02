@@ -37,7 +37,7 @@ def create_app():
         return User.query.get(int(user_id))
 
     # Register blueprints
-    from .routes import main as main_bp
+    from .routes.main import main_bp
     app.register_blueprint(main_bp)
 
     # Error handling
