@@ -6,7 +6,7 @@ services:
     region: frankfurt
     buildCommand: |
       pip install -r requirements.txt
-    startCommand: gunicorn 'app:create_app("config.ProdConfig")'
+    startCommand: gunicorn 'app:create_app("app.config.ProdConfig")'
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
@@ -30,7 +30,7 @@ services:
     region: frankfurt
     buildCommand: |
       pip install -r requirements.txt
-    startCommand: gunicorn 'app:create_app("config.StagingConfig")'
+    startCommand: gunicorn 'app:create_app("app.config.StagingConfig")'
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
