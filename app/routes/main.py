@@ -61,7 +61,7 @@ def login():
                 flash("Invalid credentials.")
         except Exception as e:
             flash(f"An error occurred: {str(e)}")
-    return render_template('login.html')
+    return render_template('main.login.html')
 
 @main_bp.route("/logout")
 @login_required
@@ -74,7 +74,7 @@ def logout():
 @login_required
 def my_locations():
     locations = Location.query.filter_by(user_id=current_user.id).all()
-    return render_template('my_locations.html', locations=locations)
+    return render_template('main.my_locations.html', locations=locations)
 
 @main_bp.route("/add_location", methods=["GET", "POST"])
 @login_required
@@ -94,7 +94,7 @@ def add_location():
         flash('Location saved successfully!')
         return redirect(url_for('main.add_location'))
 
-    return render_template('add_location.html')
+    return render_template('main.add_location.html')
 
 @main_bp.route('/compare_travel', methods=['GET', 'POST'])
 @login_required
@@ -120,4 +120,4 @@ def compare_travel():
             return redirect(url_for('main.compare_travel'))
 
     saved_locations = Location.query.filter_by(user_id=current_user.id).all()
-    return render_template('compare_travel.html', saved_locations=saved_locations)
+    return render_template('main.compare_travel.html', saved_locations=saved_locations)
