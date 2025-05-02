@@ -15,7 +15,7 @@ services:
       - key: FLASK_ENV
         value: production
       - key: APP_CONFIG
-        value: config.ProdConfig
+        value: app.config.ProdConfig
       - key: SECRET_KEY
         sync: false
       - key: GOOGLE_API_KEY
@@ -39,7 +39,7 @@ services:
       - key: FLASK_ENV
         value: staging
       - key: APP_CONFIG
-        value: config.StagingConfig
+        value: app.config.StagingConfig
       - key: SECRET_KEY
         sync: false
       - key: GOOGLE_API_KEY
