@@ -12,7 +12,7 @@
     {% endif %}
   {% endwith %}
 
-  <form method="POST" action="{{ url_for('login') }}">
+  <form method="POST" action="{{ url_for('main.login') }}">
     <label>Email:</label><br>
     <input type="email" name="email" required><br><br>
 
