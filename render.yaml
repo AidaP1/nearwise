@@ -1,22 +1,48 @@
 services:
   - type: web
-    name: nearwise
+    name: nearwise-prod
     env: python
+    branch: main
+    region: frankfurt
     buildCommand: |
       pip install -r requirements.txt
-    startCommand: gunicorn --config gunicorn_config.py app:app
+    startCommand: gunicorn 'app:create_app("config.ProdConfig")'
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
       - key: RENDER
         value: "true"
-      - key: FLASK_APP
-        value: app.py
       - key: FLASK_ENV
         value: production
+      - key: APP_CONFIG
+        value: config.ProdConfig
       - key: SECRET_KEY
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
       - key: SQLALCHEMY_DATABASE_URI
-        sync: false 
+        sync: false
+
+  - type: web
+    name: nearwise-staging
+    env: python
+    branch: staging
+    region: frankfurt
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: gunicorn 'app:create_app("config.StagingConfig")'
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: RENDER
+        value: "true"
+      - key: FLASK_ENV
+        value: staging
+      - key: APP_CONFIG
+        value: config.StagingConfig
+      - key: SECRET_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: SQLALCHEMY_DATABASE_URI
+        sync: false

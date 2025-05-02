@@ -14,6 +14,11 @@ logger = setup_logger(__name__)
 def create_app():
     load_dotenv()
     app = Flask(__name__)
+
+   # Determine config object: use argument, then APP_CONFIG env var, then default
+    config_object = config_object or os.getenv("APP_CONFIG", "config.DefaultConfig")
+    app.config.from_object(config_object)
+
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key')
 
     if os.getenv('RENDER') == 'true':
