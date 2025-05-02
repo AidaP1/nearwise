@@ -11,23 +11,13 @@ migrate = Migrate()
 login_manager = LoginManager()
 logger = setup_logger(__name__)
 
-def create_app():
+def create_app(config_object=None):
     load_dotenv()
     app = Flask(__name__)
 
    # Determine config object: use argument, then APP_CONFIG env var, then default
     config_object = config_object or os.getenv("APP_CONFIG", "config.DefaultConfig")
     app.config.from_object(config_object)
-
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key')
-
-    if os.getenv('RENDER') == 'true':
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
-    else:
-        basedir = os.path.abspath(os.path.dirname(__file__))
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, '..', 'myapp.db')
-    
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
     migrate.init_app(app, db)
