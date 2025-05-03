@@ -20,7 +20,7 @@ services:
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
-      - key: SQLALCHEMY_DATABASE_URI
+      - key: DATABASE_URL
         sync: false
 
   - type: web
@@ -44,5 +44,5 @@ services:
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
-      - key: SQLALCHEMY_DATABASE_URI
+      - key: DATABASE_URL
         sync: false
