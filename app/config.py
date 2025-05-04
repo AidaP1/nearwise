@@ -16,3 +16,9 @@ class StagingConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = os.getenv('STAGING_DATABASE_URL', 'sqlite:///myapp.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     pass
+
+class LocalConfig(DefaultConfig):
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key')
+    SQLALCHEMY_DATABASE_URI = "sqlite:///local_dev.db"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    pass

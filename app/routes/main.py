@@ -4,8 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import User, Location
 from .. import db
 from ..services.travel import get_travel_times, compare_locations
-import os
-
 
 main_bp = Blueprint('main', __name__)
 

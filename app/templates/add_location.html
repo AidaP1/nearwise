@@ -3,7 +3,7 @@
 {% block content %}
   <h2>Add a Location</h2>
 
-  <form method="POST" action="{{ url_for('add_location') }}">
+  <form method="POST" action="{{ url_for('main.add_location') }}">
     <label>Name (e.g. Home, Work):</label><br>
     <input type="text" name="name" required><br><br>
 

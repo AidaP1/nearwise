@@ -16,7 +16,10 @@ def create_app(config_object=None):
     app = Flask(__name__)
 
    # Determine config object: use argument, then APP_CONFIG env var, then default
-    config_object = config_object or os.getenv("APP_CONFIG", "app.config.DefaultConfig")
+    if not config_object:
+        if os.environ.get("RENDER") == "true":
+            config_object = os.getenv("APP_CONFIG", "app.config.DefaultConfig")
+        else: config_object = "app.config.LocalConfig"
     app.config.from_object(config_object)
 
     db.init_app(app)

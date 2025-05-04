@@ -2,7 +2,7 @@
 
 {% block content %}
   <h2>Compare Travel Time</h2>
-  <form method="POST" action="{{ url_for('compare_travel') }}">
+  <form method="POST" action="{{ url_for('main.compare_travel') }}">
     <label>Enter a new location (e.g. address or postcode):</label><br>
     <input type="text" name="new_location" required><br><br>
 
