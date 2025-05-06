@@ -32,8 +32,8 @@ def register_user():
                 flash("That email address is already in use.")
             else:
                 # create new user
-                hashed_pw = generate_password_hash(password)
-                new_user = User(email=email, password_hash=hashed_pw)
+                new_user = User(email=email)
+                new_user.set_password(password)
                 db.session.add(new_user)
                 db.session.commit()
                 flash("Registration successful! Please log in.")
@@ -52,7 +52,7 @@ def login():
             email = request.form.get('email')
             password = request.form.get('password')
             user = User.query.filter_by(email=email).first()
-            if user and check_password_hash(user.password_hash, password):
+            if user and user.check_password(password):
                 login_user(user)  # log the user in
                 return redirect(url_for('main.home'))
             else:

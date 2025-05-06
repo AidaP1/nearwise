@@ -22,3 +22,9 @@ class LocalConfig(DefaultConfig):
     SQLALCHEMY_DATABASE_URI = "sqlite:///local_dev.db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     pass
+
+class TestConfig(DefaultConfig):
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key')
+    SQLALCHEMY_DATABASE_URI = "sqlite:///local_dev.db"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    pass
