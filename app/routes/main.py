@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import User, Location
 from .. import db
 from ..services.travel import get_travel_times, compare_locations
+from ..utils.password import is_password_secure
 
 main_bp = Blueprint('main', __name__)
 
@@ -31,6 +32,12 @@ def register_user():
             elif User.query.filter_by(email=email).first():
                 flash("That email address is already in use.")
             else:
+                # Check password security
+                is_secure, message = is_password_secure(password)
+                if not is_secure:
+                    flash(message)
+                    return render_template('register.html')
+                
                 # create new user
                 new_user = User(email=email)
                 new_user.set_password(password)
@@ -92,7 +99,7 @@ def add_location():
         flash('Location saved successfully!')
         return redirect(url_for('main.add_location'))
 
-    return render_template('main.add_location.html')
+    return render_template('add_location.html')
 
 @main_bp.route('/compare_travel', methods=['GET', 'POST'])
 @login_required

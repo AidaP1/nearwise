@@ -1,4 +1,5 @@
 from app.models import User
+from app.utils.password import is_password_secure
 
 def test_create_user(db_session):
     """
