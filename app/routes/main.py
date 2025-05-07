@@ -126,3 +126,23 @@ def compare_travel():
 
     saved_locations = Location.query.filter_by(user_id=current_user.id).all()
     return render_template('compare_travel.html', saved_locations=saved_locations)
+
+@main_bp.route("/locations", methods=["GET", "POST"])
+@login_required
+def locations():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        address = request.form.get('address')
+
+        if not name or not address:
+            flash('Both name and address are required.')
+        else:
+            # Create and save new location
+            new_loc = Location(name=name, address=address, user_id=current_user.id)
+            db.session.add(new_loc)
+            db.session.commit()
+            flash('Location saved successfully!')
+            return redirect(url_for('main.locations'))
+
+    locations = Location.query.filter_by(user_id=current_user.id).all()
+    return render_template('locations.html', locations=locations)
