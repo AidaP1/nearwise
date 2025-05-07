@@ -22,6 +22,8 @@ def create_app(config_object=None):
         else: config_object = "app.config.LocalConfig"
     app.config.from_object(config_object)
 
+    print(f"Loaded config: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)

@@ -2,32 +2,35 @@ import pytest
 from app import create_app, db
 from app.config import TestConfig
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def app():
     """
-    Create and configure a new app instance for each test session.
-    Uses the TestConfig to ensure the test database is used.
+    Create a Flask app instance for the test session.
     """
     app = create_app(TestConfig)
     with app.app_context():
+        db.create_all()
         yield app
+        db.drop_all()
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def client(app):
-    """
-    Returns a test client for the app.
-    """
     return app.test_client()
 
-@pytest.fixture(scope='session')
-def _db(app):
+@pytest.fixture(scope='function')
+def db_session(app):
     """
-    Returns a database instance for the tests.
-    Drops and creates all tables at the start of the session.
+    Provide a database session bound to a transaction, rolled back after each test.
+    Compatible with Flask-SQLAlchemy 3.x (no direct assignment to db.session).
     """
-    db.app = app
-    db.drop_all()
-    db.create_all()
+    connection = db.engine.connect()
+    transaction = connection.begin()
+
+    # Bind the connection to the current session context
+    db.session.bind = connection
+
     yield db
+
+    transaction.rollback()
+    connection.close()
     db.session.remove()
-    db.drop_all()

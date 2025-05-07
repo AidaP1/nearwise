@@ -1,10 +1,10 @@
-def test_login_logout(client, _db):
+def test_login_logout(client, db_session):
     from app.models import User
 
     user = User(email='login@example.com')
     user.set_password('password123')
-    _db.session.add(user)
-    _db.session.commit()
+    db_session.session.add(user)
+    db_session.session.commit()
 
     # Attempt login — change 'username' to 'email'
     response = client.post('/login', data={
