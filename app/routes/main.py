@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import User, Location
 from .. import db
 from ..services.travel import get_travel_times, compare_locations
+from ..services.address import create_location_with_verified_address,verify_address
 from ..utils.password import is_password_secure
 
 main_bp = Blueprint('main', __name__)
@@ -105,18 +106,30 @@ def add_location():
 @login_required
 def compare_travel():
     if request.method == 'POST':
-        new_location = request.form.get('new_location')
+        new_location_address = request.form.get('new_location')
         saved_location_id = request.form.get('saved_location_id')
 
+        if not new_location_address or not saved_location_id:
+            flash('Both new location and saved location are required.')
+            return redirect(url_for('main.compare_travel'))
+
+        # Verify the new location address and get coordinates
+        is_valid, details = verify_address(new_location_address)
+        if not is_valid:
+            flash('Could not verify the new location address. Please check and try again.')
+            return redirect(url_for('main.compare_travel'))
+
         try:
+            # Convert address to coordinates
+            new_location_coords = (details['lat'], details['lng'])
             saved_location, results = compare_locations(
-                new_location_address=new_location,
+                new_location_coords=new_location_coords,
                 saved_location_id=saved_location_id,
                 user_id=current_user.id
             )
             return render_template(
                 'travel_results.html',
-                new_location=new_location,
+                new_location=new_location_address,
                 saved_location=saved_location,
                 results=results
             )
@@ -137,12 +150,18 @@ def locations():
         if not name or not address:
             flash('Both name and address are required.')
         else:
-            # Create and save new location
-            new_loc = Location(name=name, address=address, user_id=current_user.id)
-            db.session.add(new_loc)
-            db.session.commit()
-            flash('Location saved successfully!')
-            return redirect(url_for('main.locations'))
+            # Create location with verified address and coordinates
+            success, location = create_location_with_verified_address(
+                user_id=current_user.id,
+                name=name,
+                address=address
+            )
+            
+            if success:
+                flash('Location added successfully!')
+                return redirect(url_for('main.locations'))
+            else:
+                flash('Could not verify the address. Please check and try again.')
 
     locations = Location.query.filter_by(user_id=current_user.id).all()
     return render_template('locations.html', locations=locations)

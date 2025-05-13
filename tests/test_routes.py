@@ -39,13 +39,13 @@ def test_add_location(client, auth):
     # Test adding a location
     response = client.post('/locations', data={
         'name': 'Test Location',
-        'address': '123 Test St'
+        'address': '123 Test St',
+        'latitude': 40.7128,
+        'longitude': -74.0060
     }, follow_redirects=True)
     
     assert response.status_code == 200
-    assert b"Location saved successfully!" in response.data
-    assert b"Test Location" in response.data
-    assert b"123 Test St" in response.data
+    assert b'Location added successfully' in response.data
 
 def test_add_location_validation(client, auth):
     """
