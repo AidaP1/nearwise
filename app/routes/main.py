@@ -1,10 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, current_app
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.security import generate_password_hash, check_password_hash
 from ..models import User, Location
 from .. import db
-from ..services.travel import get_travel_times, compare_locations
-from ..services.address import create_location_with_verified_address,verify_address
+from ..services.travel import compare_locations
+from ..services.address import create_location_with_verified_address, verify_address
 from ..utils.password import is_password_secure
 
 main_bp = Blueprint('main', __name__)
@@ -15,31 +14,24 @@ def home():
         return render_template('home.html', user=current_user)
     return render_template('home.html')
 
-@main_bp.route("/index")
-def index():
-    return redirect(url_for('main.home'))
-
 @main_bp.route("/register", methods=["GET", "POST"])
 def register_user():
     if current_user.is_authenticated:
-        return redirect(url_for('main.home'))  # if logged in, skip register
+        return redirect(url_for('main.home'))
     if request.method == 'POST':
         try:
             email = request.form.get('email')
             password = request.form.get('password')
-            # Simple validation:
             if not email or not password:
                 flash("Please fill all fields.")
             elif User.query.filter_by(email=email).first():
                 flash("That email address is already in use.")
             else:
-                # Check password security
                 is_secure, message = is_password_secure(password)
                 if not is_secure:
                     flash(message)
                     return render_template('register.html')
                 
-                # create new user
                 new_user = User(email=email)
                 new_user.set_password(password)
                 db.session.add(new_user)
@@ -61,7 +53,7 @@ def login():
             password = request.form.get('password')
             user = User.query.filter_by(email=email).first()
             if user and user.check_password(password):
-                login_user(user)  # log the user in
+                login_user(user)
                 return redirect(url_for('main.home'))
             else:
                 flash("Invalid credentials.")
@@ -76,31 +68,31 @@ def logout():
     flash("You have logged out.")
     return redirect(url_for("main.home"))
 
-@main_bp.route("/my_locations")
+@main_bp.route("/locations", methods=["GET", "POST"])
 @login_required
-def my_locations():
-    locations = Location.query.filter_by(user_id=current_user.id).all()
-    return render_template('my_locations.html', locations=locations)
-
-@main_bp.route("/add_location", methods=["GET", "POST"])
-@login_required
-def add_location():
+def locations():
     if request.method == 'POST':
         name = request.form.get('name')
         address = request.form.get('address')
 
         if not name or not address:
             flash('Both name and address are required.')
-            return redirect(url_for('main.add_location'))
+        else:
+            # Create location with verified address and coordinates
+            success, location = create_location_with_verified_address(
+                user_id=current_user.id,
+                name=name,
+                address=address
+            )
+            
+            if success:
+                flash('Location added successfully!')
+                return redirect(url_for('main.locations'))
+            else:
+                flash('Could not verify the address. Please check and try again.')
 
-        # Create and save new location
-        new_loc = Location(name=name, address=address, user_id=current_user.id)
-        db.session.add(new_loc)
-        db.session.commit()
-        flash('Location saved successfully!')
-        return redirect(url_for('main.add_location'))
-
-    return render_template('add_location.html')
+    locations = Location.query.filter_by(user_id=current_user.id).all()
+    return render_template('locations.html', locations=locations)
 
 @main_bp.route('/compare_travel', methods=['GET', 'POST'])
 @login_required
@@ -139,29 +131,3 @@ def compare_travel():
 
     saved_locations = Location.query.filter_by(user_id=current_user.id).all()
     return render_template('compare_travel.html', saved_locations=saved_locations)
-
-@main_bp.route("/locations", methods=["GET", "POST"])
-@login_required
-def locations():
-    if request.method == 'POST':
-        name = request.form.get('name')
-        address = request.form.get('address')
-
-        if not name or not address:
-            flash('Both name and address are required.')
-        else:
-            # Create location with verified address and coordinates
-            success, location = create_location_with_verified_address(
-                user_id=current_user.id,
-                name=name,
-                address=address
-            )
-            
-            if success:
-                flash('Location added successfully!')
-                return redirect(url_for('main.locations'))
-            else:
-                flash('Could not verify the address. Please check and try again.')
-
-    locations = Location.query.filter_by(user_id=current_user.id).all()
-    return render_template('locations.html', locations=locations)
