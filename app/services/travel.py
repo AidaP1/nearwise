@@ -96,7 +96,7 @@ def compare_locations(new_location_coords: Tuple[float, float],
     if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
         raise ValueError("Invalid coordinates")
 
-    saved_location = Location.query.filter_by(id=saved_location_id, user_id=user_id).first()
+    saved_location = Location.query.filter_by(id=saved_location_id, user_id=user_id, deleted=False).first()
 
     if not saved_location:
         raise ValueError("Saved location not found or does not belong to user.")

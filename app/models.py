@@ -24,3 +24,4 @@ class Location(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    deleted = db.Column(db.Boolean, default=False, nullable=False, server_default=db.text('false'))

@@ -10,6 +10,9 @@
                     <div class="location-card">
                         <h3>{{ location.name }}</h3>
                         <p>{{ location.address }}</p>
+                        <form method="POST" action="{{ url_for('main.delete_location', location_id=location.id) }}" class="delete-form">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
                     </div>
                 {% endfor %}
             </div>

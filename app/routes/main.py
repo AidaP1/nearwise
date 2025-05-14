@@ -91,8 +91,20 @@ def locations():
             else:
                 flash('Could not verify the address. Please check and try again.')
 
-    locations = Location.query.filter_by(user_id=current_user.id).all()
+    locations = Location.query.filter_by(user_id=current_user.id, deleted=False).all()
     return render_template('locations.html', locations=locations)
+
+@main_bp.route("/locations/<int:location_id>/delete", methods=["POST"])
+@login_required
+def delete_location(location_id):
+    location = Location.query.filter_by(id=location_id, user_id=current_user.id).first()
+    if location:
+        location.deleted = True
+        db.session.commit()
+        flash('Location deleted successfully!')
+    else:
+        flash('Location not found.')
+    return redirect(url_for('main.locations'))
 
 @main_bp.route('/compare_travel', methods=['GET', 'POST'])
 @login_required
@@ -129,5 +141,5 @@ def compare_travel():
             flash(str(e))
             return redirect(url_for('main.compare_travel'))
 
-    saved_locations = Location.query.filter_by(user_id=current_user.id).all()
+    saved_locations = Location.query.filter_by(user_id=current_user.id, deleted=False).all()
     return render_template('compare_travel.html', saved_locations=saved_locations)
